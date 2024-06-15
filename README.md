@@ -1,1 +1,1 @@
-back de u appi de prueba de red social sencilla
+Backend de un appi de prueba de red social sencilla
