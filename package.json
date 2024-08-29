@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node --env-file .env --watch src/index.js"
+    "start": "nodemon src/index.js"
   },
   "author": "Sebastian Echazu",
   "license": "MIT",
@@ -15,10 +15,15 @@
     "body-parser": "^1.19.0",
     "connect-multiparty": "^2.2.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.17.1",
-    "firebase-admin": "^12.2.0",
     "jwt-simple": "^0.5.6",
     "moment": "^2.24.0",
+    "mongodb": "^6.3.0",
+    "mongoose-pagination": "^1.0.0",
     "node-check-update": "^0.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
   }
 }
