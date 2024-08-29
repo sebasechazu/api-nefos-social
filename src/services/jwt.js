@@ -21,7 +21,7 @@ export const createToken = (user) => {
     console.log('---------------------------------------');
     console.log('Token creado con éxito');
     console.log('User:', payload.name , " - mail:", payload.email);
-    console.log('Fecha actual:', moment().format());
+    console.log('token:', moment().format());
     console.log('---------------------------------------');
 
     return jwt.encode(payload, secret);

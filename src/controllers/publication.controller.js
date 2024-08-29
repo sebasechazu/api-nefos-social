@@ -8,6 +8,7 @@ import mongodb from 'mongodb';
 import Publication from '../models/publication.model.js';
 import Follow from '../models/follow.model.js';
 
+
 const { ObjectId } = mongodb;
 
 
@@ -30,6 +31,7 @@ export const savePublication = async(req, res) => {
 
     const existingUser = await getDatabase().collection('publications').findOne({_id: new ObjectId(userId)  });
 
+    
 
      publication.save((err, publicationStored) => {
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "node --env-file .env --watch src/index.js"
   },
   "author": "Sebastian Echazu",
   "license": "MIT",

@@ -5,8 +5,8 @@ import mongodb from 'mongodb';
 import { resolve } from 'path';
 
 import User from '../models/user.model.js';
-import Follow from '../models/follow.model.js';
-import Publication from '../models/publication.model.js';
+//import Follow from '../models/follow.model.js';
+//import Publication from '../models/publication.model.js';
 
 import { createToken } from '../services/jwt.js';
 import { getDatabase } from '../index.js';
@@ -118,56 +118,48 @@ export const loginUser = async (req, res) => {
     }
 };
 // ----------------------------------------------
-// export const getUser = async (req, res) => {
+export const getUser = async (req, res) => {
 
-//     try {
+    try {
 
-//         const userId = req.params.id;
+        const userId = req.params.id;
 
-//         if (!ObjectId.isValid(userId)) {
-//             return res.status(400).send({ message: 'ID de usuario no válido' });
-//         }
+        if (!ObjectId.isValid(userId)) {
+            return res.status(400).send({ message: 'ID de usuario no válido' });
+        }
 
-//         const user = await getDatabase().collection('users').findOne({ _id: new ObjectId(userId) });
+        const user = await getDatabase().collection('users').findOne({ _id: new ObjectId(userId) });
 
-//         console.log(user);
+        if (!user)
+            return res.status(404).send({ message: 'El Usuario no existe' });
 
-//         if (!user)
-//             return res.status(404).send({ message: 'El Usuario no existe' });
+        followThisUser(req.user.sub, userId).then((value) => {
 
-//         followThisUser(req.user.sub, userId).then((value) => {
+            user.password = undefined;
 
-//             user.password = undefined;
+            return res.status(200).send({
+                user,
+                following: value.following,
+                followed: value.followed
+            });
+        });
 
-//             return res.status(200).send({
-//                 user,
-//                 following: value.following,
-//                 followed: value.followed
-//             });
-//         });
+    } catch (error) {
 
-//     } catch (error) {
-
-//         return res.status(500).send({ message: error });
-//     }
-// }
+        return res.status(500).send({ message: error });
+    }
+}
 // ----------------------------------------------
-// async function followThisUser(identity_user_id, user_id) {
+async function followThisUser(identity_user_id, user_id) {
 
-//     const following = await _findOne({ "user": identity_user_id, "followed": user_id })
-//         .exec().then((follow) => {
-//             return follow;
-//         }).catch((err) => { return handleError(err) });
+    const following = await getDatabase().collection('user').findOne({ "user": identity_user_id, "followed": user_id });
 
-//     const followed = await _findOne({ "user": user_id, "followed": identity_user_id })
-//         .exec().then((follow) => {
-//             return follow;
-//         }).catch((err) => { return handleError(err) });
-//     return {
-//         following: following,
-//         followed: followed
-//     }
-// }
+    const followed = await getDatabase().collection('user').findOne({ "user": user_id, "followed": identity_user_id });
+    return {
+        following: following,
+        followed: followed
+    }
+}
 // ----------------------------------------------
 export const getUsers = async (req, res) => {
     try {
@@ -183,51 +175,51 @@ export const getUsers = async (req, res) => {
         return res.status(500).send({ message: 'Error en la petición' });
     }
 };
+// ----------------------------------------------
+export const updateUser = async (req, res) => {
+    try {
 
-// export const updateUser = async (req, res) => {
-//     try {
+        const userId = req.params.id;
+        const update = req.body;
+        delete update.password;
 
-//         const userId = req.params.id;
-//         const update = req.body;
-//         delete update.password;
+        if (userId != req.user.sub) {
+            return res.status(500).send({ message: 'No tienes permisos para actualizar datos' });
+        }
 
-//         if (userId != req.user.sub) {
-//             return res.status(500).send({ message: 'No tienes permisos para actualizar datos' });
-//         }
+        const filter = { _id: new ObjectId(userId) };
 
-//         const filter = { _id: new ObjectId(userId) };
+        const options = { upsert: true };
 
-//         const options = { upsert: true };
+        var userIsset = false;
 
-//         var userIsset = false;
+        users.forEach((user) => {
+            if (user && user._id != userId) userIsset = true;
+        });
 
-//         users.forEach((user) => {
-//             if (user && user._id != userId) userIsset = true;
-//         });
+        if (userIsset)
+            return res.status(404).send({ message: 'los datos ya estan en uso' });
 
-//         if (userIsset)
-//             return res.status(404).send({ message: 'los datos ya estan en uso' });
+        findByIdAndUpdate(userId, update, { new: true, useFindAndModify: false },
+            (err, userUpdated) => {
 
-//         findByIdAndUpdate(userId, update, { new: true, useFindAndModify: false },
-//             (err, userUpdated) => {
+                if (err)
+                    return res.status(500).send({ message: 'Existe un error en la peticion' });
 
-//                 if (err)
-//                     return res.status(500).send({ message: 'Existe un error en la peticion' });
+                if (!userUpdated)
+                    return res.status(404)
+                        .send({ message: 'No se ha podido actualizar el usuario' });
 
-//                 if (!userUpdated)
-//                     return res.status(404)
-//                         .send({ message: 'No se ha podido actualizar el usuario' });
+                return res.status(200).send({ user: userUpdated });
+            });
 
-//                 return res.status(200).send({ user: userUpdated });
-//             });
+    } catch (error) {
 
-//     } catch (error) {
+        return res.status(500).send({ message: error });
 
-//         return res.status(500).send({ message: error });
+    }
 
-//     }
-
-// }
+}
 
 // export function uploadImage(req, res) {
 
@@ -298,43 +290,43 @@ export const getUsers = async (req, res) => {
 //     }
 // }
 
-export function removeFilesOfUploads(res, file_path, mensage) {
-    unlink(file_path, (err) => {
+// export function removeFilesOfUploads(res, file_path, mensage) {
+//     unlink(file_path, (err) => {
 
-        return res.status(200).send({ mesagge: mensage });
-    });
-}
+//         return res.status(200).send({ mesagge: mensage });
+//     });
+// }
 
-export function getImageFile(req, res) {
+// export function getImageFile(req, res) {
 
-    var image_File = req.params.imageFile;
+//     var image_File = req.params.imageFile;
 
-    var path_file = './uploads/users/' + image_File;
+//     var path_file = './uploads/users/' + image_File;
 
-    _exists(path_file, (exists) => {
+//     _exists(path_file, (exists) => {
 
-        if (exists) {
+//         if (exists) {
 
-            res.sendFile(resolve(path_file));
-        } else {
+//             res.sendFile(resolve(path_file));
+//         } else {
 
-            res.status(200).send({ mesagge: 'no existe la imagen' });
-        }
-    });
-}
+//             res.status(200).send({ mesagge: 'no existe la imagen' });
+//         }
+//     });
+// }
 
-export function getCounters(req, res) {
+// export function getCounters(req, res) {
 
-    var userId = req.user.sub;
+//     var userId = req.user.sub;
 
-    if (req.params.id) {
-        userId = req.params.id;
-    }
+//     if (req.params.id) {
+//         userId = req.params.id;
+//     }
 
-    getCountFollow(userId).then((value) => {
-        return res.status(200).send(value);
-    });
-}
+//     getCountFollow(userId).then((value) => {
+//         return res.status(200).send(value);
+//     });
+// }
 
 // async function getCountFollow(user_id) {
 
@@ -369,8 +361,8 @@ export default {
     registerUser,
     loginUser,
     getUsers,
-    getImageFile,
-    getCounters,
+    //getImageFile,
+    //getCounters,
     //getUser,
     //updateUser,
     //uploadImage,
