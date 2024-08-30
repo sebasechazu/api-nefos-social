@@ -17,7 +17,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.17.1",
-    "express-status-monitor": "^1.2.3",
     "jwt-simple": "^0.5.6",
     "moment": "^2.24.0",
     "mongodb": "^6.3.0",
