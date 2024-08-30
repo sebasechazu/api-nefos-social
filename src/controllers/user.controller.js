@@ -1,9 +1,6 @@
 'use strict'
-import { unlink} from 'fs';
 import bcryptjs from 'bcryptjs';
 import mongodb from 'mongodb';
-import { resolve } from 'path';
-
 import User from '../models/user.model.js';
 //import Follow from '../models/follow.model.js';
 //import Publication from '../models/publication.model.js';
