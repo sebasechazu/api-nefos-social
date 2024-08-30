@@ -7,6 +7,7 @@ import User from '../models/user.model.js';
 
 import { createToken } from '../services/jwt.js';
 import { getDatabase } from '../index.js';
+import logger from '../../utils/logger.js';
 
 const { compare, hashSync } = bcryptjs;
 const { ObjectId } = mongodb;
@@ -33,7 +34,7 @@ export const registerUser = async (req, res) => {
             const existingUser = await getDatabase().collection('users').findOne({ email: user.email.toLowerCase() });
 
             if (existingUser) {
-
+                logger.info('El usuario que intentas registrar ya existe');
                 return res.status(200).send({ message: 'El usuario que intentas registrar ya existe' });
             }
 
@@ -218,6 +219,18 @@ export const updateUser = async (req, res) => {
 
 }
 
+export default {
+    registerUser,
+    loginUser,
+    getUsers,
+}
+
+//getImageFile,
+    //getCounters,
+    //getUser,
+    //updateUser,
+    //uploadImage,
+
 // export function uploadImage(req, res) {
 
 //     var userId = req.params.id;
@@ -353,14 +366,3 @@ export const updateUser = async (req, res) => {
 //         publications: publications
 //     }
 // }
-
-export default {
-    registerUser,
-    loginUser,
-    getUsers,
-    //getImageFile,
-    //getCounters,
-    //getUser,
-    //updateUser,
-    //uploadImage,
-}
